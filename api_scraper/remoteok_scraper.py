@@ -52,6 +52,31 @@ def output_jobs_to_xls(data):
     wb.save('remote_jobs.xls')
 
 
+def send_email(send_from, send_to, subject, text, files=None):
+    assert isinstance(send_to, list)
+    msg = MIMEMultipart()
+    msg['From'] = send_from
+    msg['To'] = COMMASPACE.join(send_to)
+    msg['Date'] = formatdate(localtime=True)
+    msg['Subject'] = subject
+
+    msg.attach(MIMEText(text))
+
+    for f in files or []:
+        with open(f, "rb") as fil:
+            part = MIMEApplication(fil.read(), Name=basename(f))
+        part['Content-Disposition'] = f'attachment; filename="{basename(f)}"'
+        msg.attach(part)
+
+    smtp = smtplib.SMTP('smtp.gmail.com: 587')
+    smtp.starttls()
+    smtp.login(send_from, '')  # enter account psswd
+    smtp.sendmail(send_from, send_to, msg.as_string())
+    smtp.close()
+
+
 if __name__ == "__main__":
     json = get_job_postings()[1:]
     output_jobs_to_xls(json)
+    send_email('dummyaccount557@yahoo.com', ['xxxxxxxx@gmail.com'], 'Jobs Posting',
+               'Please, find attached a list of job postings to this email', files=['remote_jobs.xls'])
