@@ -52,6 +52,24 @@ def get_product_rating(soup):
         print("Value obtained for rating could not be parsed")
         exit()
 
+
+def get_product_technical_details(soup):
+    details = {}
+    technical_details_section = soup.find('div', id='prodDetails')
+    # use findAll since there are more than one table with same class attribute
+    data_tables = technical_details_section.findAll(
+        'table', class_='prodDetTable'
+    )
+    # iterate over data tables and extract content from each table row which includes table header and table data
+    for table in data_tables:
+        table_rows = table.findAll('tr')
+        for row in table_rows:
+            row_key = row.find('th').text.strip()
+            row_value = row.find('td').text.strip().replace('\u200e', '')
+            # use table header as key and table data as value in details dict
+            details[row_key] = row_value
+    return details
+
 # extract site content
 
 
@@ -63,12 +81,25 @@ def extract_product_info(url):
     product_info['price'] = get_product_price(soup)
     product_info['title'] = get_product_title(soup)
     product_info['rating'] = get_product_rating(soup)
-    print(product_info)
+    product_info.update(get_product_technical_details(soup))
+    return product_info
 
 
 if __name__ == "__main__":
+    products_data = []  # holds a list of dictionaries that contains product info
     with open('amazon_products_urls.csv') as csvfile:
         reader = csv.reader(csvfile, delimiter=',')
         for row in reader:
             url = row[0]
-            print(extract_product_info(url))
+            # add each product infor to products data list
+            products_data.append(extract_product_info(url))
+
+    # write product data to csv file
+    output_file_name = 'output-{}.csv'.format(
+        datetime.today().strftime("%m-%d-%Y"))
+    with open(output_file_name, 'w') as outputfile:
+        writer = csv.writer(outputfile)
+        # pops out last dict from products data list and grabs all keys which will be used as header in csv file
+        writer.writerow(products_data.pop().keys())
+        for product in products_data:
+            writer.writerow(product.values())
