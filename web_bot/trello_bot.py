@@ -42,12 +42,33 @@ def navigateToBoard():
     time.sleep(5)
 
 
+def addTask():
+    time.sleep(2)
+    DRIVER.find_element(
+        By.XPATH, value="//textarea[@aria-label='To Do']/ancestor::div/descendant::div[@class='card-composer-container js-card-composer-container']/child::a").click()
+    task_text_area = DRIVER.find_element(
+        By.XPATH, value="//div[@class='card-composer']/descendant::textarea")
+    task_text_area.clear()
+    task_text_area.send_keys("Bot Added Task")
+    DRIVER.find_element(By.XPATH, value="//input[@value='Add card']").click()
+    time.sleep(5)
+
+
+def screenshotPage():
+    time.sleep(2)
+    date_str = date.today().strftime("%m-%d-%Y")
+    fpath = os.path.join(os.getcwd(), 'downloads/{}.png'.format(date_str))
+    DRIVER.get_screenshot_as_file(fpath)
+
+
 def main():
     try:
         DRIVER.get("https://trello.com")
         login()
         navigateToBoard()
-        input("Bot Operation Completed. Press any key...")
+        addTask()
+        screenshotPage()
+        #input("Bot Operation Completed. Press any key...")
         DRIVER.close()
     except Exception as e:
         print(e)
