@@ -35,10 +35,18 @@ def login():
         time.sleep(5)
 
 
+def navigateToBoard():
+    time.sleep(10)
+    DRIVER.find_element(
+        By.XPATH, value="//div[@title='{}']/ancestor::a".format('Bot Board')).click()
+    time.sleep(5)
+
+
 def main():
     try:
         DRIVER.get("https://trello.com")
         login()
+        navigateToBoard()
         input("Bot Operation Completed. Press any key...")
         DRIVER.close()
     except Exception as e:
